@@ -27,7 +27,9 @@ for ((i = 1; i <=50; i++)); do
   jq '.workflow_runs[] | select(.name == "'"$RUN_NAME"'")' "$RUNS_TMP_FILE" > "$DISPATCHED_RUN_TMP_FILE"
 
   if grep -q "id" "$DISPATCHED_RUN_TMP_FILE"; then
-    echo -e "\x1b[35;49mDispatched run logs url: $(jq --raw-output '.html_url' "$DISPATCHED_RUN_TMP_FILE")"
+    HTML_URL=$(jq --raw-output '.html_url' "$DISPATCHED_RUN_TMP_FILE")
+    STATUS=$(jq --raw-output '.status' "$DISPATCHED_RUN_TMP_FILE")
+    echo -e "\x1b[35;49mDispatched run logs url: \x1b[36;49$HTML_URL\x1b[35;49m, status: \x1b[36;49$STATUS"
     echo "::group::Dispatched run details"
     jq --color-output '.' "$DISPATCHED_RUN_TMP_FILE"
     echo "::endgroup::"

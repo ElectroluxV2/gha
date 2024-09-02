@@ -33,7 +33,7 @@ branding:
 runs:
   using: "composite"
   steps:
-  - run: "./action.sh"  
+  - run: "${{ github.action_path }}/action.sh"  
     shell: bash
     env:
       INPUT_RUN_NAME: ${{ inputs.run-name }}
