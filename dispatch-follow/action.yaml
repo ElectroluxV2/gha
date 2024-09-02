@@ -28,7 +28,7 @@ runs:
   # language=bash
   - run: |
       RUN_NAME="$INPUT_RUN_NAME - $(date)"
-      echo -e "\x1b[35;49mDispatching \x1b[36;49m$INPUT_WORKFLOW_LOCATOR\x1b[35;49 with run name \x1b[36;49m$RUN_NAME"
+      echo -e "\x1b[35;49mDispatching \x1b[36;49m$INPUT_WORKFLOW_LOCATOR\x1b[35;49m with run name \x1b[36;49m$RUN_NAME"
       
       curl "https://api.github.com/repos/$INPUT_WORKFLOW_LOCATOR/dispatches" \
         -X POST \
@@ -39,7 +39,7 @@ runs:
             "sample": "sample",
             "run-name": "'"$RUN_NAME"'"
           }
-        }'
+        }' | awk '{print "\x1b[90;49m"$0}'
       
     shell: bash
     env:
