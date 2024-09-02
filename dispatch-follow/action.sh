@@ -38,7 +38,7 @@ for ((i = 1; i <=50; i++)); do
 
     if jq --exit-status '.status == "completed"' $DISPATCHED_RUN_TMP_FILE > /dev/null 2>&1; then
       CONCLUSION=$(jq --raw-output '.conclusion' "$DISPATCHED_RUN_TMP_FILE")
-      echo -e "\x1b[35;49mDispatched run finished, final conclusion: \x1b[36;49$CONCLUSION"
+      echo -e "\x1b[35;49mDispatched run finished, final conclusion: \x1b[36;49m$CONCLUSION"
       if [ "$CONCLUSION" == "success" ]; then
         exit 0
       else
