@@ -13,7 +13,7 @@ curl "https://api.github.com/repos/$INPUT_WORKFLOW_LOCATOR/dispatches" \
       "run-name": "'"$RUN_NAME"'"
     }
   }' \
-|& sed "s/^/\x1b[90;49m/" # Change curl output color to gray
+|& while read -r line; do echo -e "\x1b[90;49m$line"; done # Change curl output color to gray
 
 for ((i = 1; i <=50; i++)); do        
   echo -e "\x1b[35;49mWaiting for dispatched run, attempt \x1b[36;49m$i\x1b[35;49m/\x1b[36;49m50"
@@ -21,7 +21,7 @@ for ((i = 1; i <=50; i++)); do
   curl "https://api.github.com/repos/$INPUT_WORKFLOW_LOCATOR/runs" \
     -H "Authorization: token $GITHUB_TOKEN" \
     -o "$RUNS_TMP_FILE" \
-  |& sed "s/^/\x1b[90;49m/" # Change curl output color to gray
+  |& while read -r line; do echo -e "\x1b[90;49m$line"; done # Change curl output color to gray
 
   # JQ will save empty file if run was not found
   jq '.workflow_runs[] | select(.name == "'"$RUN_NAME"'")' "$RUNS_TMP_FILE" > "$DISPATCHED_RUN_TMP_FILE"
@@ -29,7 +29,7 @@ for ((i = 1; i <=50; i++)); do
   if grep -q "id" "$DISPATCHED_RUN_TMP_FILE"; then
     HTML_URL=$(jq --raw-output '.html_url' "$DISPATCHED_RUN_TMP_FILE")
     STATUS=$(jq --raw-output '.status' "$DISPATCHED_RUN_TMP_FILE")
-    echo -e "\x1b[35;49mDispatched run logs url: \x1b[36;49$HTML_URL\x1b[35;49m, status: \x1b[36;49$STATUS"
+    echo -e "\x1b[35;49mDispatched run logs url: \x1b[36;49m$HTML_URL\x1b[35;49m, status: \x1b[36;49m$STATUS"
     echo "::group::Dispatched run details"
     jq --color-output '.' "$DISPATCHED_RUN_TMP_FILE"
     echo "::endgroup::"
