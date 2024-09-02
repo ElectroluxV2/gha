@@ -1,7 +1,7 @@
 name: "Dispatch & follow workflow"
 description: |
   Dispatches given workflow and watches for its completion, sets status accordingly to the watched workflow
-  Requires: curl, jq & GITHUB_TOKEN env
+  Requires: curl, jq, sed & GITHUB_TOKEN env
 inputs:
   run-name:
     description: "Will be used in combination with datetime to identify the dispatched run and is visible in the ui"
@@ -17,6 +17,14 @@ inputs:
       Format: `{"input1": "value1", "input2": "value2"}`
     required: false
     default: "{}"
+  workflow-timeout-attempts:
+    description: "How many pool calls will be made before considering workflow as timeout-ed"
+    required: false
+    default: "50"
+  workflow-timeout-threshold:
+    description: "How many seconds between poll calls"
+    required: false
+    default: "10"
 
 branding: 
   icon: "eye"
@@ -25,36 +33,7 @@ branding:
 runs:
   using: "composite"
   steps:
-  # language=bash
-  - run: |
-      RUN_NAME="$INPUT_RUN_NAME - $(date)"
-      echo -e "\x1b[35;49mDispatching \x1b[36;49m$INPUT_WORKFLOW_LOCATOR\x1b[35;49m with run name \x1b[36;49m$RUN_NAME"
-      
-      curl "https://api.github.com/repos/$INPUT_WORKFLOW_LOCATOR/dispatches" \
-        -X POST \
-        -H "Authorization: token $GITHUB_TOKEN" \
-        -d '{
-          "ref": "main",
-          "inputs": {
-            "sample": "sample",
-            "run-name": "'"$RUN_NAME"'"
-          }
-        }' | awk '{print "\x1b[90;49m"$0}'
-      
-      awk 'BEGIN{
-          s="/\\/\\/\\/\\/\\"; s=s s s s s s s s;
-          for (colnum = 0; colnum<77; colnum++) {
-              r = 255-(colnum*255/76);
-              g = (colnum*510/76);
-              b = (colnum*255/76);
-              if (g>255) g = 510-g;
-              printf "\033[48;2;%d;%d;%dm", r,g,b;
-              printf "\033[38;2;%d;%d;%dm", 255-r,255-g,255-b;
-              printf "%s\033[0m", substr(s,colnum+1,1);
-          }
-          printf "\n";
-      }'
-      
+  - run: "./action.sh"  
     shell: bash
     env:
       INPUT_RUN_NAME: ${{ inputs.run-name }}
