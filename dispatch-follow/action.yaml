@@ -1,0 +1,47 @@
+name: "Dispatch & follow workflow"
+description: |
+  Dispatches given workflow and watches for its completion, sets status accordingly to the watched workflow
+  Requires: curl, jq & GITHUB_TOKEN env
+inputs:
+  run-name:
+    description: "Will be used in combination with datetime to identify the dispatched run and is visible in the ui"
+    required: true
+  workflow-locator:
+    description: |
+      The workflow file path in the repository to dispatch
+      Format: `<repo-owner>/<repo-name>/actions/workflows/<file>.yaml`
+    required: true
+  workflow-inputs:
+    description: |
+      The inputs to pass to the dispatched workflow
+      Format: `{"input1": "value1", "input2": "value2"}`
+    required: false
+    default: "{}"
+
+branding: 
+  icon: "eye"
+  color: "red"
+
+runs:
+  using: "composite"
+  steps:
+  # language=bash
+  - run: |
+      RUN_NAME="$INPUT_RUN_NAME - $(date)"
+      echo -e "\x1b[35;49mDispatching \x1b[36;49m$INPUT_WORKFLOW_LOCATOR\x1b[35;49 with run name \x1b[36;49m$RUN_NAME"
+      
+      curl "https://api.github.com/repos/$INPUT_WORKFLOW_LOCATOR/dispatches" \
+        -X POST \
+        -H "Authorization: token $GITHUB_TOKEN" \
+        -d '{
+          "ref": "main",
+          "inputs": {
+            "sample": "sample",
+            "run-name": "'"$RUN_NAME"'"
+          }
+        }'
+      
+    shell: bash
+    env:
+      INPUT_RUN_NAME: ${{ inputs.run-name }}
+      INPUT_WORKFLOW_LOCATOR: ${{ inputs.workflow-locator }}
