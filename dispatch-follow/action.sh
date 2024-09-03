@@ -4,7 +4,7 @@ RUN_NAME="$INPUT_RUN_NAME - $(date)"
 echo -e "\x1b[35;49mDispatching \x1b[36;49m$INPUT_WORKFLOW_LOCATOR\x1b[35;49m with run name \x1b[36;49m$RUN_NAME"
 
 GIVEN_INPUTS="$INPUT_WORKFLOW_INPUTS"
-MANDATORY_INPUTS=""
+MANDATORY_INPUTS='{"run-name": "'"$RUN_NAME"'"}'
 COMBINED_INPUTS=$(echo "$GIVEN_INPUTS" "$MANDATORY_INPUTS" | jq --raw-output --slurp '.[0] * .[1]')
 echo "::group::Dispatched run inputs"
 echo "$COMBINED_INPUTS" | jq --color-output '.'
