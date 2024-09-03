@@ -3,6 +3,13 @@ DISPATCHED_RUN_TMP_FILE="dispatched_run.json"
 RUN_NAME="$INPUT_RUN_NAME - $(date)"
 echo -e "\x1b[35;49mDispatching \x1b[36;49m$INPUT_WORKFLOW_LOCATOR\x1b[35;49m with run name \x1b[36;49m$RUN_NAME"
 
+GIVEN_INPUTS="$INPUT_WORKFLOW_INPUTS"
+MANDATORY_INPUTS=""
+COMBINED_INPUTS=$(echo "$GIVEN_INPUTS" "$MANDATORY_INPUTS" | jq --raw-output --slurp '.[0] * .[1]')
+echo "::group::Dispatched run inputs"
+echo "$COMBINED_INPUTS" | jq --color-output '.'
+echo "::endgroup::"
+
 curl "https://api.github.com/repos/$INPUT_WORKFLOW_LOCATOR/dispatches" \
   --fail-with-body \
   --no-progress-meter \
@@ -10,10 +17,7 @@ curl "https://api.github.com/repos/$INPUT_WORKFLOW_LOCATOR/dispatches" \
   -H "Authorization: token $GITHUB_TOKEN" \
   -d '{
     "ref": "main",
-    "inputs": {
-      "sample": "sample",
-      "run-name": "'"$RUN_NAME"'"
-    }
+    "inputs": '"$COMBINED_INPUTS"'
   }' \
 |& sed "s/^/\x1b[91;49m/" # Change curl output color to bright red
 

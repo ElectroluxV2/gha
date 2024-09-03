@@ -38,3 +38,4 @@ runs:
     env:
       INPUT_RUN_NAME: ${{ inputs.run-name }}
       INPUT_WORKFLOW_LOCATOR: ${{ inputs.workflow-locator }}
+      INPUT_WORKFLOW_INPUTS: ${{ inputs.workflow-inputs }}
