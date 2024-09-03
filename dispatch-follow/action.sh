@@ -16,6 +16,11 @@ curl "https://api.github.com/repos/$INPUT_WORKFLOW_LOCATOR/dispatches" \
   }' \
 |& sed "s/^/\x1b[91;49m/" # Change curl output color to bright red
 
+# Fail if curl failed, read piped return code
+if [ "${PIPESTATUS[0]}" -ne 0 ]; then
+  exit 1
+fi
+
 for ((i = 1; i <=50; i++)); do        
   echo -e "\x1b[35;49mWaiting for dispatched run, attempt \x1b[36;49m$i\x1b[35;49m/\x1b[36;49m50"
 
@@ -24,6 +29,11 @@ for ((i = 1; i <=50; i++)); do
     -H "Authorization: token $GITHUB_TOKEN" \
     -o "$RUNS_TMP_FILE" \
   |& sed "s/^/\x1b[91;49m/" # Change curl output color to bright red
+  
+  # Fail if curl failed, read piped return code
+  if [ "${PIPESTATUS[0]}" -ne 0 ]; then
+    exit 1
+  fi
 
   # JQ will save empty file if run was not found
   jq '.workflow_runs[] | select(.name == "'"$RUN_NAME"'")' "$RUNS_TMP_FILE" > "$DISPATCHED_RUN_TMP_FILE"
