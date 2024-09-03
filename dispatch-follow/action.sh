@@ -4,6 +4,7 @@ RUN_NAME="$INPUT_RUN_NAME - $(date)"
 echo -e "\x1b[35;49mDispatching \x1b[36;49m$INPUT_WORKFLOW_LOCATOR\x1b[35;49m with run name \x1b[36;49m$RUN_NAME"
 
 curl "https://api.github.com/repos/$INPUT_WORKFLOW_LOCATOR/dispatches" \
+  --fail-with-body \
   --no-progress-meter \
   -X POST \
   -H "Authorization: token $GITHUB_TOKEN" \
@@ -18,13 +19,14 @@ curl "https://api.github.com/repos/$INPUT_WORKFLOW_LOCATOR/dispatches" \
 
 # Fail if curl failed, read piped return code
 if [ "${PIPESTATUS[0]}" -ne 0 ]; then
-  exit 1
+  exit 2
 fi
 
 for ((i = 1; i <=50; i++)); do        
   echo -e "\x1b[35;49mWaiting for dispatched run, attempt \x1b[36;49m$i\x1b[35;49m/\x1b[36;49m50"
 
   curl "https://api.github.com/repos/$INPUT_WORKFLOW_LOCATOR/runs" \
+    --fail-with-body \
     --no-progress-meter \
     -H "Authorization: token $GITHUB_TOKEN" \
     -o "$RUNS_TMP_FILE" \
@@ -32,7 +34,7 @@ for ((i = 1; i <=50; i++)); do
   
   # Fail if curl failed, read piped return code
   if [ "${PIPESTATUS[0]}" -ne 0 ]; then
-    exit 1
+    exit 3
   fi
 
   # JQ will save empty file if run was not found
@@ -59,7 +61,7 @@ for ((i = 1; i <=50; i++)); do
 
   if [ $i -eq 50 ]; then
     echo -e "\x1b[91;49mDispatched run not found"
-    exit 2
+    exit 4
   fi
 
   sleep 10
